@@ -1,23 +1,8 @@
-# Assignment 4
 ## Overview
-The requirements of assignment 4 expand the capabilities of the previously assigned assignment 1, checkpoint 1 and checkpoint 2. Along with the logging functionality to the server which as added in assignment 2, as well as the multi-threading functionality from checkpoint 2, the server reading and writing to both files and the server's log are now fully atomic, allowing for conflicting requests to be completed coherently.
-
-The server can be started using the command:
+The server can be started using the command (After compilation):
 	./httpserver -t [threads] and [-l logfile] [port] to specify the number of threads, logfile, and port to open.
 	
 ### Design
-Like assignment 1, checkpoint 1, and checkpoint 2, this program makes use of structs as well as a multitude of functions of various types inside which all sent and recieved bytes for the server are processed.
-All requests are split between the given number of threads to complete various number of methods that could be specified
-by the client. The server will run continuously until manually shut down.
-Once again, similar to assignment 1 and assignment 2, All requests are formatted with a request line, head field, and message body. These can be sent in any order and will not block the completion of other requests as long as the full request is sent eventually.
-All interactions that are completed are logged either in the specified logfile or in stderr by default.
-When the server is started and no threads are specified, a default number of 4 threads is created.
-
-This particular assignment proved to be one of the most difficult programming assignments that I've had to complete 
-throughout my overall College career. The difficulties involved with synchronizing the threads and making sure that
-it produces the correct results was quite time consuming but helped me to understand many of the concepts that we've
-been discussing in class.
-
 The thread safety of my system is guaranteed by a few different design implimentations
 I have multiple global variables that can be accessed by all threads whenever they need to complete differnt actions. Through the use of an integer queue called jobQueue, potential job connections are pushed and pulled to queue up
 jobs for the threads to complete. They are guaranteed mutual exclusion by a mutex called "mutex" which is locked and unlocked whenever something is added to the job queue. There are also two semaphores called empty_sem and full_sem, which are initialized to 1000 and 0 respectively.
@@ -31,9 +16,6 @@ There is also an array of clientRequest structs which holds threads to be saved 
 The amount of threads available and total threads are saved with the totalThreads and threadusage integer variables.
 
 #### Programmer Defined Functions
-The functions designed in this program were created to help modularize the reading, processing, and returning of bytes between client and server, making it easier to debug and reducing the propegation of errors throughout the program.
-The main purpose of assignment 3 was adding multi-threaded functionality, and my Assignment 3 design differs quite a bit from my assignment 2 design.
-
 Starting off, the main function manages the number of threads specified and potential logfile and sets global variables accordingly, as well as initializing the thread_pool[threads] variable to the total number of threads specified using 
 pthreadcreate(). The main function will continuously poll() until a connection is recieved and then designate one of the worker threads to complete the task and then return to polling for connections. It is through the use of poll() that once a sigterm or sigkill signal is recieved, the main function exits its listening loop and uses pthread_join to join all threads and then exit the program successfully.
 
@@ -80,9 +62,6 @@ The **isBadRequest()** function checks if the request field and the header field
 ##### servResponse()
 The **servResponse()** function takes in int and clientRequest object. A char buffer is specified to hold the response and the sprintf function is used to write the desired response into the char buffer based on the code given. Using send, we then send the message to the client.
 
-#### Data Structures and Modules
-The data structures used in Assignment 3 were the same as Assignment 2 and 1 with some additions that could be seen above. The use of user defined functions, structs, and enumerated objects were used frequently in this program.
-
 ##### struct clientRequest()
 This was simply a struct to hold all aspects of the client request. It holds 3 integers and 3 char buffers. The 3 integers hold the socket, enumerated method, and message length. The 3 char buffers hold the file name, http type, and full request sent by the client.
 
@@ -97,19 +76,3 @@ This was an integer array that was used as a queue with 4 monitoring ints. Those
 
 ##### clientRequest saveState[1000]
 This was an array of clientRequest objects which would be used to save progress with connections if they were swapped with another. It was also monitored using 4 ints. Those ints being saveIn, saveOut, totalSavedm and saveSize. Whenever something was added or removed to the queue, saveIn and saveOut were incremented respectively and modulod with the size of the array, ensuring that the item with the highest priority was accessed.
-
-#### Errors
-The number of errors that were required for this Assignment was a decent quantity smaller than Assignment 1. Similar to Assignment 1, most of these errors were specified by the status-codes which we are given iin the design document. The status codes that we were required to respons with were 200, 201, 404, and 500.
-
-##### 200 OK
-The body of this status code is "Ok\n" and is sent when a method is successful.
-
-##### 201 Created
-The body of this status code is "Created\n" and is sent when a successful PUT method's URI is created.
-
-##### 404 Not Found
-The body of this status code is "Not Found\n" and is ent when the URI's file does not exist.
-
-##### 500 Internal Server Error
-The body of this status code is "Internal Server Error\n" and  is sent when an unexcpected issue prevents processing.
-
